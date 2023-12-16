@@ -1,0 +1,41 @@
+name: Deploy To Dev
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      AWS_INSTANCE_IP: ${{ secrets.AWS_INSTANCE_IP }}
+      AWS_INSTANCE_USER: ${{ secrets.AWS_INSTANCE_USER }}
+      AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.5.1
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Set Node.js environment variable
+        run: echo "export NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
+
+      - name: Build Angular app
+        run: npm run build -- --configuration=${NODE_ENV}
+
+      - name: Deploy to my EC2 instance
+        uses: easingthemes/ssh-deploy@v2.1.5
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY}}
+          SOURCE: "dist/angular-demo/"
+          REMOTE_HOST: "ec2-remote-host"
+          REMOTE_USER: "ubuntu"
+          TARGET: "/var/www/html/angular-demo/"

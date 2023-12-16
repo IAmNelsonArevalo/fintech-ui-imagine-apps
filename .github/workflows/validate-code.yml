@@ -1,0 +1,32 @@
+name: Validate Code
+
+on:
+    push:
+        branches:
+            - feature/*
+            - hotfix/*
+            - release/*
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                node-version: 20.5.1
+            
+            - name: Install Dependencies
+              run: npm install
+            
+            - name: Run Prettier
+              run: npm run eslint
+
+            - name: Run ESLint
+              run: npm run eslint
+
+            - name: Run Unit Tests
+              run: npm run test
